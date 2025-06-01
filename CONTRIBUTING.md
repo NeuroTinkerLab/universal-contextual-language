@@ -1,6 +1,6 @@
 # Contributing to UCL (Universal Contextual Language)
 
-Thank you for your interest in contributing to the UCL specification and ecosystem! We welcome contributions from everyone. By participating in this project, you agree to abide by our [Code of Conduct](./CODE_OF_CONDUCT.md).
+Thank you for your interest in contributing to the UCL specification and ecosystem! We welcome contributions from everyone. 
 
 There are many ways to contribute, from improving documentation and providing examples to proposing changes to the specification itself or developing tooling.
 
