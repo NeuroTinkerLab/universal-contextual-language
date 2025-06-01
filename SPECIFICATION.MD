@@ -1,5 +1,3 @@
-
-```markdown
 # UCL (Universal Contextual Language) Specification - Version 4.2 "Enhanced"
 
 ## Part 1: Introduction, Scope, Principles, and General Message Structure
@@ -21,7 +19,7 @@ UCL (Universal Contextual Language) is a formal language designed for the repres
     2.  **Rigorous Machine Processability:** The syntax must be formally defined to allow for deterministic parsing and reliable validation.
     3.  **Facilitated Human Readability:** While prioritizing machine processability, UCL's textual form aims for sufficient readability to enable human development, debugging, and understanding.
     4.  **Explicit Contextualization:** The meaning and interpretation of a UCL message are intrinsically tied to its `ContextStackPart`.
-    5.  **Semantic Interoperability:** Promote the use of globally unique identifiers (URIs) and an Tying into standard or shared vocabularies and ontologies.
+    5.  **Semantic Interoperability:** Promote the use of globally unique identifiers (URIs) and tying into standard or shared vocabularies and ontologies.
     6.  **Controlled Extensibility:** The language must allow for the introduction of new concepts, actions, and contexts in a standardized and manageable way.
     7.  **Representation Efficiency:** Balance semantic expressiveness with compactness, especially in its binary serialization form.
 
@@ -58,7 +56,9 @@ Direction       = ">" / "<" / "<>"
 TargetPart      = UCLID
 OperationPart   = OperationVerb CANONICAL_SPACE UCLID_OperationSpecific
 OperationVerb   = "read" / "execute" / "query" / "create" / "delete" / "subscribe" / "notify" / CustomVerb_UCLID
-CustomVerb_UCLID= UCLID ; For domain-specific verbs
+CustomVerb_UCLID= UCLID
+UCLID_OperationSpecific = UCLID ; Added for completeness based on usage
+
 ModifiersPart   = 1*(MODIFIER_PREFIX UCLID) *(CANONICAL_SPACE MODIFIER_PREFIX UCLID)
 MODIFIER_PREFIX = "^"
 PayloadSeparator= ":"
@@ -115,9 +115,7 @@ The primary purpose of UCL-IDs is to provide an unambiguous mechanism for referr
 ### 2.2. Canonical Format: URI (Uniform Resource Identifier)
 
 *   The canonical and preferred format for a UCL-ID is a valid **URI (Uniform Resource Identifier)** as defined in RFC 3986.
-*   The use of **IRIs (Internationalized Resource Identifiers)** as defined in RFC 3987 is recommended to support Unicode characters from
-    diverse languages. IRIs must be converted to their equivalent ASCII URI form for serialization and use in contexts requiring
-    pure URIs (e.g., via the Percent-Encoding process for non-ASCII characters).
+*   The use of **IRIs (Internationalized Resource Identifiers)** as defined in RFC 3987 is recommended to support Unicode characters from diverse languages. IRIs must be converted to their equivalent ASCII URI form for serialization and use in contexts requiring pure URIs (e.g., via the Percent-Encoding process for non-ASCII characters).
 *   **Examples of UCL-IDs as URIs:**
     *   `http://schema.org/Book`
     *   `http://www.wikidata.org/entity/Q42` (Douglas Adams)
@@ -192,10 +190,6 @@ To manage the evolution of vocabularies and ontologies, UCL-IDs can include vers
     *   If a UCL-ID is used without a version specifier, it is implicitly assumed to refer to the "latest stable" version or a default version as defined by the namespace manager of the UCL-ID.
 *   **Example:** `schema:Book@15.0`, `myont:Order@2.1.0`
 
-
-**Content for `SPECIFICATION.MD` (Continuing - Part 3 - English Version):**
-
-```markdown
 ## Part 3: Literal and Structured Data Types (Payload)
 
 The `PayloadPart` of a UCL message carries the actual data or parameters for an operation. It is defined as a single `Value`. This section defines the `Value` types supported by UCL 4.2.
@@ -279,7 +273,7 @@ A `UCLID` (as defined in Section 2) can be used directly as a `Value` (and thus 
 *   **3.4.1. List (`ListValue`)**
     *   **Syntax:** `[` `[` `Value` `*(LIST_SEPARATOR Value)` `]` `]` (Outer square brackets are delimiters; inner indicates optionality of the value list if the list is empty).
         *   Simplified form: `[` `Value_1` `,` `Value_2` `,` ... `,` `Value_N` `]`
-        *   `LIST_SEPARATOR` is `,` (comma).
+        *   `LIST_SEPARATOR` is `,` (comma). In canonical form: `,` (comma with a single space after, unless it's the last element).
     *   **Semantics:** Represents an ordered sequence of zero or more `Value`s.
     *   **Nesting:** Since a `Value` can itself be a `ListValue` or a `MapValue`, lists can contain nested structures.
     *   **Empty List:** Represented as `[]`.
@@ -288,14 +282,14 @@ A `UCLID` (as defined in Section 2) can be used directly as a `Value` (and thus 
 *   **3.4.2. Map (`MapValue`)**
     *   **Syntax:** `{` `[` `MapPair` `*(MAP_SEPARATOR MapPair)` `]` `}`
         *   Simplified form: `{` `Key_1:Value_1` `,` `Key_2:Value_2` `,` ... `,` `Key_N:Value_N` `}`
-        *   `MAP_SEPARATOR` is `,` (comma).
+        *   `MAP_SEPARATOR` is `,` (comma). In canonical form: `,` (comma with a single space after, unless it's the last pair).
     *   **`MapPair` Syntax:** `(UCLID / StringLiteral) PAIR_SEPARATOR Value`
-        *   `PAIR_SEPARATOR` is `:` (colon).
+        *   `PAIR_SEPARATOR` is `:` (colon). In canonical form: `:` (colon with no spaces around it in canonical form of map pairs, or a single space after, depending on strict interpretation of "key: value"). Let's assume no spaces for key:value for max compactness.
     *   **Semantics:** Represents an unordered collection of zero or more key-value pairs.
     *   **Keys:**
         *   Each key **must** be either a `UCLID` or a `StringLiteral`.
         *   The use of `UCLID`s as keys is **strongly recommended** for semantic clarity and interoperability (e.g., `ucl:param:name`, `schema:author`).
-        *   StringLiteral keys should be used मानवcautiously, preferably for application-specific fields whose names do not have a standard UCL-ID equivalent.
+        *   StringLiteral keys should be used cautiously, preferably for application-specific fields whose names do not have a standard UCL-ID equivalent.
         *   **Duplicate Key Policy:** If a `MapValue` contains duplicate keys (same string or same resolved URI):
             *   **Strict Mode:** The parser **must** report an error and consider the message invalid.
             *   **Permissive Mode:** The parser *may* accept the message, and the value associated with the key will be that of the *last* occurrence of the key encountered during parsing. It **must** still issue a warning.
@@ -303,14 +297,9 @@ A `UCLID` (as defined in Section 2) can be used directly as a `Value` (and thus 
     *   **Empty Map:** Represented as `{}`.
     *   **Example:**
         ```ucl
-        { 
-          schema:name: "The Book Title", 
-          schema:author: wd:Q3395, 
-          ucl:param:publicationYear: 2024,
-          ucl:param:tags: [ "science_fiction", "classic" ],
-          "customApp:internalID": "XYZ-789"
-        }
+        {schema:name:"The Book Title",schema:author:wd:Q3395,ucl:param:publicationYear:2024,ucl:param:tags:["science_fiction","classic"],"customApp:internalID":"XYZ-789"}
         ```
+        (Note: Example shown with canonical spacing for map pairs and list items).
 
 ### 3.5. Edge Case Handling (Summary)
 
@@ -321,9 +310,6 @@ A `UCLID` (as defined in Section 2) can be used directly as a `Value` (and thus 
 
 ---
 
-**Content for `SPECIFICATION.MD` (Continuing - Part 4 - English Version):**
-
-```markdown
 ## Part 4: Semantics of Message Components
 
 This section describes the meaning and purpose of each major component of a UCL message, as defined in the general structure (Section 1.4).
@@ -389,7 +375,7 @@ This section describes the meaning and purpose of each major component of a UCL 
         *   `subscribe`: Request to receive future notifications related to a resource or event.
         *   `notify`: Send an asynchronous notification regarding an event or state change.
     *   **`CustomVerb_UCLID`:** A `UCLID` can be used instead of a standard verb to define highly domain-specific operations, whose semantics are defined by the ontology to which the UCL-ID belongs.
-*   **`UCLID_OperationSpecific`:** A `UCLID` that further qualifies the operation or identifies the primary resource or resource type мягкthe operation acts upon.
+*   **`UCLID_OperationSpecific`:** A `UCLID` that further qualifies the operation or identifies the primary resource or resource type the operation acts upon.
     *   For `execute`: `ucl:action:startProcess`, `app:verb:sendEmail`.
     *   For `query`: `ucl:verb:findEntities`, `schema:Recipe` (to find recipes).
     *   For `read`: `schema:description` (to read the description of the `TargetPart`).
@@ -521,15 +507,8 @@ A system processing UCL **must** implement robust error handling. When an error 
 
 *   **UCL Error Message (Example):**
     ```ucl
-    @prefix ucl: <http://ucl-spec.org/4.1/core#>
-    OriginalMessageTarget < OriginalMessageSource ! ucl:error:processingFailed : 
-      { 
-        ucl:param:errorCode: ucl:errCode:SyntaxError, // or SemanticError, UnresolvedIdentifier, etc.
-        ucl:param:errorMessage: "Invalid token '&&' found at position 75.",
-        ucl:param:offendingMessagePart: "...", // (optional) part of the original message that caused the error
-        ucl:param:originalMessageID: "..." // (optional) ID of the original message, if present
-      } 
-    # ucl:context:ErrorResponse / ucl:context:UCLProcessing
+    @prefix ucl: <http://ucl-spec.org/4.2/core#>
+    OriginalMessageTarget < OriginalMessageSource ! ucl:error:processingFailed : { ucl:param:errorCode: ucl:errCode:SyntaxError, ucl:param:errorMessage: "Invalid token '&&' found at position 75.", ucl:param:offendingMessagePart: "...", ucl:param:originalMessageID: "..." } # ucl:context:ErrorResponse / ucl:context:UCLProcessing
     ```
 
 *   **Common Error Categories and Suggested UCL-ID Codes (`ucl:errCode:`):**
@@ -654,7 +633,7 @@ While the textual form of UCL 4.2 is optimized for human readability, debugging,
 
 A UCL-Bin message could be structured as follows. Exact details (e.g., number of bytes for tags, field order) would require a formal binary specification document.
 
-```
+```text
 +-------------------------------------------------------------------+
 | Magic Number (e.g., 4 bytes, e.g., "UCLB")                        |
 +-------------------------------------------------------------------+
@@ -731,7 +710,7 @@ A UCL-Bin message could be structured as follows. Exact details (e.g., number of
 Textual UCL Message: `myprefix:ObjA > myprefix:ServiceB execute myprefix:Action1 : { myprefix:param1:"val1" } # myprefix:Ctx1`
 
 Potential Binary Structure (very abstract):
-```
+```text
 [MAGIC_UCLB]
 [HEADER_FLAGS]
 [PREFIX_TABLE_START]
@@ -766,8 +745,7 @@ The detailed definition of the UCL-Bin format, including exact tag byte values, 
 This section serves only to outline the expected principles and high-level structure for such a binary format.
 
 ---
-```
-```markdown
+
 ## Part 8: LLM Interaction (Tooling and Guidelines)
 
 This section provides recommendations and guidelines to facilitate effective interaction between systems using UCL 4.2 and Large Language Models (LLMs), both for interpreting UCL and for generating UCL messages.
@@ -776,254 +754,134 @@ This section provides recommendations and guidelines to facilitate effective int
 
 LLMs can play several key roles within the UCL ecosystem:
 
-1.  **"Prompt Compiler" from Natural Language to UCL:** Translating user requests formulated in natural language intoPerf the structured and unambiguous UCL 4.2 format. This is a primary use case for making UCL accessible.
-2.  etto! Concludiamo la specifica tecnica con la **Iterazione 11: `SPEC**Interpreter of UCL Messages:** Understanding a UCL message and performing the requested task (e.g., answering a query, generating contentIFICATION.MD` - Parte 8 (in inglese)**.
+1.  **"Prompt Compiler" from Natural Language to UCL:** Translating user requests formulated in natural language into the structured and unambiguous UCL 4.2 format.
+2.  **Interpreter of UCL Messages:** Understanding a UCL message and performing the requested task (e.g., answering a query, generating content, executing a simulated action), especially if the LLM itself acts as the `TargetPart` of the message.
+3.  **Generator of UCL Messages:** Creating UCL messages as output, for example, to communicate with other UCL-aware services or agents, or to structure its own internal "thoughts" or intermediate plans.
+4.  **UCL Validator/Corrector (Limited):** An LLM could be used to identify common syntactic or semantic errors in a UCL message, especially if instructed with the rules, though a formal parser would remain more reliable for strict validation.
+5.  **Assistant for Creating UCL Vocabularies/Ontologies:** Helping developers define new UCL-IDs and their semantic descriptions.
 
-Questa sezione è dedicata a come UCL 4.2, executing a simulated action), especially if the LLM itself acts as the `TargetPart` of the message.
- può interagire efficacemente con i Modelli Linguistici di Grandi Dimensioni (LLM).
+### 8.2. System Instructions (System Prompt) for LLMs
 
+To enable an LLM to operate effectively with UCL (either as a "Prompt Compiler" or as an interpreter/generator), it is crucial to provide it with a clear and detailed **System Prompt** (or equivalent custom instructions) that defines:
 
-
-**Content for `3.  **Generator of UCL Messages:** Creating UCL messages as output, for instance, to communicate with other UCL-aware services orSPECIFICATION.MD` (Continuing - Part 8 - English Version):**
-
-
-## Part 8 agents, or to structure its own internal "thoughts" or intermediate plans.
-4.  **UCL Validator/Corre: LLM Interaction (Tooling and Guidelines)
-
-This section provides recommendations and guidelines to facilitate effective interaction between systems using UCL 4.2 and Large Language Models (LLMs), both for interpreting UCL and for generating UCL messages.
-
-###ctor (Limited):** An LLM could be used to identify common syntactic or semantic errors in a UCL message, especially if instructed with the rules, although a formal parser would remain more reliable for strict validation.
-5.  **Assistant for UCL 8.1. Role of LLMs in the UCL Ecosystem
-
-LLMs can play several key roles within the UCL ecosystem:
-
- Vocabulary/Ontology Creation:** Helping developers define new UCL-IDs and their semantic descriptions.
-
-### 8.21.  **"Prompt Compiler" from Natural Language to UCL:** Translating user requests formulated in natural language into the structured and unambiguous UCL 4.2 format. This is a primary use case for making UCL accessible.
-2.  **. System Instructions (System Prompt) for LLMs
-
-To enable an LLM to operate effectively with UCL (as a "Prompt Compiler" or as an interpreter/generator), it is crucial to provide it with a clear and detailed **System Prompt**Interpreter of UCL Messages:** Understanding a UCL message and performing the requested task (e.g., answering a query, generating content, executing a simulated action), especially if the LLM itself acts as the `TargetPart` of the message.
- (or equivalent custom instructions) that defines:
-
-*   Its specific role concerning UCL (e.g., "You are an NL to UCL translator," "You are an agent that receives UCL commands and performs X").
-*   A concise yet3.  **Generator of UCL Messages:** Creating UCL messages as output, for example, to communicate with other UCL-aware services or sufficient summary of the **key UCL 4.2 specifications** (message structure, `OperationVerb` types, payload agents, or to structure its own internal "thoughts" or intermediate plans.
-4.  **UCL Validator/Corre syntax for lists and maps, use of `@prefix` and UCL-IDs, context handling).
-*   **Concrete examplesctor (Limited):** An LLM could be used to identify common syntactic or semantic errors in a UCL message, especially** of NL -> UCL translations or UCL messages it is expected to receive/generate.
-*   Guidelines on how to handle ambiguity if instructed with the rules, though a formal parser would remain more reliable for strict validation.
-5.  **Assistant, missing information, or errors.
+*   Its specific role concerning UCL (e.g., "You are a translator from NL to UCL," "You are an agent that receives UCL commands and executes X").
+*   A concise yet sufficient summary of the **key UCL 4.2 specifications** (message structure, `OperationVerb` types, payload syntax for lists and maps, use of `@prefix` and UCL-IDs, context handling).
+*   **Concrete examples** of NL-to-UCL translations or UCL messages it is expected to receive/generate.
+*   Guidelines on how to handle ambiguity, missing information, or errors.
 
 *   **Example System Prompt Snippet for a "Prompt Compiler":**
-    ```
-    System: YOU ARE A UCL PROMPT COMPILER. Your task is to translate user input in natural language into for Creating UCL Vocabularies/Ontologies:** Helping developers define new UCL-IDs and their semantic descriptions.
-
- a valid UCL 4.2 message.
+    ```text
+    System: YOU ARE A UCL PROMPT COMPILER. Your task is to translate user input in natural language into a valid UCL 4.2 message.
     Key UCL 4.2 Specifications to Follow:
-    - Message:### 8.2. System Instructions (System Prompt) for LLMs
-
-To enable an LLM to operate effectively with UCL ( [Source] [Direction] Target OperationVerb OperationID_UCLID [: Payload] # ContextStack
-    - OperationVereither as a "Prompt Compiler" or as an interpreter/generator), it is crucial to provide it with a clear andbs: query, execute, read, create, delete, subscribe, notify.
-    - Payload: Maps { "keyU detailed **System Prompt** (or equivalent custom instructions) that defines:
-
-*   Its specific role concerning UCL (e.CLID": Value, ... }, Lists [ Value1, Value2, ... ]. Values can be Strings "...", Numbersg., "You are a translator from NL to UCL," "You are an agent that receives UCL commands and executes X, Booleans, ucl:val:null, UCL-IDs, or nested maps/lists.
-    -").
-*   A concise yet sufficient summary of the **key UCL 4.2 specifications** (message structure, ` UCL-IDs: Use `prefix:local_part`. Common prefixes: ucl:, schema:, wd:. Declare others withOperationVerb` types, payload syntax for lists and maps, use of `@prefix` and UCL-IDs, context handling).
-* `@prefix p: <URI>`.
+    - Message: [Source] [Direction] Target OperationVerb OperationID_UCLID [: Payload] # ContextStack
+    - OperationVerbs: query, execute, read, create, delete, subscribe, notify.
+    - Payload: Maps { "keyUCLID": Value, ... }, Lists [ Value1, Value2, ... ]. Values can be Strings "...", Numbers, Booleans, ucl:val:null, UCL-IDs, or nested maps/lists.
+    - UCL-IDs: Use `prefix:local_part`. Common prefixes: ucl:, schema:, wd:. Declare others with `@prefix p: <URI>`.
     - Context: `# context1 / context2`.
-    When you   **Concrete examples** of NL-to-UCL translations or UCL messages it is expected to receive/generate.
-* receive user input, analyze it and generate ONLY the corresponding UCL 4.2 message. If input is ambiguous, you   Guidelines on how to handle ambiguity, missing information, or errors.
-
-*   **Example System Prompt Snippet for a "Prompt Compiler":**
-    ```
-    System: YOU ARE A UCL PROMPT COMPILER. Your task is to translate user may ask one clarifying question BEFORE generating UCL.
+    When you receive user input, analyze it and generate ONLY the corresponding UCL 4.2 message. If the input is ambiguous, you may ask one clarifying question BEFORE generating the UCL.
 
     NL Example: "Find flights from Rome to Paris for tomorrow"
     UCL Output Example:
     @prefix schema: <http://schema.org/>
-    @prefix trvl: <http input in natural language into a valid UCL 4.2 message.
-    Key UCL 4.2 Specifications to Follow:
-://example.org/travel#>
-    ucl:id:User > trvl:service:FlightSearch query trvl:verb:findFlights : { schema:departureAirport:wd:Q220, schema:arrivalAirport:wd    - Message: [Source] [Direction] Target OperationVerb OperationID_UCLID [: Payload] # ContextStack
-    - OperationVerbs: query, execute, read, create, delete, subscribe, notify.
-    - Payload:Q90, schema:departureDate:"YYYY-MM-DD" } # trvl:context:FlightBooking
+    @prefix trvl: <http://example.org/travel#>
+    ucl:id:User > trvl:service:FlightSearch query trvl:verb:findFlights : { schema:departureAirport:wd:Q220, schema:arrivalAirport:wd:Q90, schema:departureDate:"YYYY-MM-DD" } # trvl:context:FlightBooking
     ---
     NOW TRANSLATE THE FOLLOWING USER INPUT:
     ```
 
-### 8.3. Developing: Maps { "keyUCLID": Value, ... }, Lists [ Value1, Value2, ... ]. Values a "Prompt Compiler" (NL -> UCL)
+### 8.3. Developing a "Prompt Compiler" (NL -> UCL)
 
 This is a crucial tool for UCL adoption.
 
-*   **LL can be Strings "...", Numbers, Booleans, ucl:val:null, UCL-IDs, or nested maps/listsM-Based Approach:** Using an LLM (as described in 8.2) is the most flexible approach. It.
-    - UCL-IDs: Use `prefix:local_part`. Common prefixes: ucl:, schema:, wd requires a good system prompt and potentially fine-tuning on NL-UCL pairs.
-*   **Hybrid Approach:**:. Declare others with `@prefix p: <URI>`.
-    - Context: `# context1 / context2`.
- Combine more traditional NLP techniques (NER, intent classification, dependency parsing) to extract a preliminary structure, and then use an LLM to    When you receive user input, analyze it and generate ONLY the corresponding UCL 4.2 message. If the input refine, resolve ambiguities, and map to specific UCL-IDs.
+*   **LLM-Based Approach:** Using an LLM (as described in 8.2) is the most flexible approach. It requires a good system prompt and potentially fine-tuning on NL-UCL pairs.
+*   **Hybrid Approach:** Combine more traditional NLP techniques (NER, intent classification, dependency parsing) to extract a preliminary structure, and then use an LLM to refine, resolve ambiguities, and map to specific UCL-IDs.
 *   **Considerations:**
     *   **Ambiguity Handling:** The compiler must have strategies for when NL input is unclear (ask for clarification, provide UCL options).
-     is ambiguous, you may ask one clarifying question BEFORE generating the UCL.
-
-    NL Example: "Find flights from Rome*   **Vocabulary Knowledge:** The compiler needs access to (or knowledge of) vocabularies and ontologies to map to Paris for tomorrow"
-    UCL Output Example:
-    @prefix schema: <http://schema.org/>
-    @prefix trvl: <http://example.org/travel#>
-    ucl:id:User > NL terms to correct UCL-IDs.
-    *   **Interactivity:** A good compiler might be interactive, guiding the user to trvl:service:FlightSearch query trvl:verb:findFlights : { schema:departureAirport:wd:Q2 specify their request more clearly.
+    *   **Vocabulary Knowledge:** The compiler needs access to (or knowledge of) vocabularies and ontologies to map NL terms to correct UCL-IDs.
+    *   **Interactivity:** A good compiler might be interactive, guiding the user to specify their request better.
 
 ### 8.4. UCL Generation by LLMs
 
 When asking an LLM to *generate* a UCL message (e.g., as the output of an action, or as an internal action plan):
 
-*20, schema:arrivalAirport:wd:Q90, schema:departureDate:"YYYY-MM-DD" } #   **Clear Instructions:** The prompt requesting UCL generation must be clear about the expected UCL format.
-*   **Provide Examples ( trvl:context:FlightBooking
-    ---
-    NOW TRANSLATE THE FOLLOWING USER INPUT:
-    ```
-
-Few-Shot):** Including examples of valid UCL messages in the prompt can significantly improve the quality and syntactic correctness of the### 8.3. Developing a "Prompt Compiler" (NL -> UCL)
-
-This is a crucial tool for UCL generated UCL.
-*   **Post-Generation Validation:** UCL generated by an LLM should ideally be validated by a adoption.
-
-*   **LLM-Based Approach:** Using an LLM (as described in 8.2) formal UCL parser before use.
+*   **Clear Instructions:** The prompt requesting UCL generation must be clear about the expected UCL format.
+*   **Provide Examples (Few-Shot):** Including examples of valid UCL messages in the prompt can significantly improve the quality and syntactic correctness of the generated UCL.
+*   **Post-Generation Validation:** UCL generated by an LLM should ideally be validated by a formal UCL parser before being utilized.
 
 ### 8.5. Tokenization Considerations
 
-*   **Standard Tokenization:** Initially is the most flexible approach. It requires a good system prompt and potentially fine-tuning on NL-UCL pairs.
-*   , reliance will be on the LLM's standard tokenizer. The UCL 4.2 syntax (with textual verbs, clear separators, and a structure reminiscent of JSON/code) is designed to be reasonably well-tokenized by current models.
-**Hybrid Approach:** Combine more traditional NLP techniques (NER, intent classification, dependency parsing) to extract a preliminary structure, and*   **Custom UCL Tokenizer (Advanced Optimization):** To maximize efficiency (reduce token count per UCL message) and potentially then use an LLM to refine, resolve ambiguities, and map to specific UCL-IDs.
-*   **Considerations:**
-    *   **Ambiguity Handling:** The compiler must have strategies for when NL input is unclear (ask for clarification, provide improve the LLM's structural understanding, a UCL-specific tokenizer *could* be considered. This is a significant effort UCL options).
-    *   **Vocabulary Knowledge:** The compiler needs access to (or knowledge of) vocabularies and and would likely be a later step once UCL is more established.
-    *   A custom tokenizer might treat `ucl:id ontologies to map NL terms to correct UCL-IDs.
-    *   **Interactivity:** A good compiler might be:`, `schema:name`, `execute`, `#` as single tokens or optimized token sequences.
+*   **Standard Tokenization:** Initially, reliance will be on the LLM's standard tokenizer. The UCL 4.2 syntax (with textual verbs, clear separators, and a structure reminiscent of JSON/code) is designed to be reasonably well-tokenized by current models.
+*   **Custom UCL Tokenizer (Advanced Optimization):** To maximize efficiency (reduce token count per UCL message) and potentially improve the LLM's structural understanding, a UCL-specific tokenizer *could* be considered. This is a significant effort and would likely be a later step once UCL is more established.
+    *   A custom tokenizer might treat `ucl:id:`, `schema:name`, `execute`, `#` as single tokens or optimized token sequences.
 
-### 8.6 interactive, guiding the user to specify their request better.
+### 8.6. Relaxed Parsing vs. LLM Output Validation
 
-### 8.4. UCL Generation by LLMs
-
-When asking. Relaxed Parsing vs. LLM Output Validation
-
-*   When an LLM generates UCL, it may not perfectly an LLM to *generate* a UCL message (e.g., as the output of an action, or as adhere to the Canonical Form.
+*   When an LLM generates UCL, it may not perfectly adhere to the Canonical Form.
 *   The system receiving UCL from an LLM should ideally use a parser in **Permissive Mode** that normalizes the input to Canonical Form and reports warnings for deviations.
-*   For critical tasks an internal action plan):
+*   For critical tasks, more rigorous validation of LLM-generated UCL is recommended.
 
-*   **Clear Instructions:** The prompt requesting UCL generation must be clear about the expected UCL format, more rigorous validation of LLM-generated UCL is recommended.
+### 8.7. Feedback Loop and Continuous Learning
 
-### 8.7. Feedback Loop and Continuous.
-*   **Provide Examples (Few-Shot):** Including examples of valid UCL messages in the prompt can significantly improve the quality Learning
-
-*   If using an LLM as a "Prompt Compiler," implementing a feedback mechanism is beneficial. If the and syntactic correctness of the generated UCL.
-*   **Post-Generation Validation:** UCL generated by an LLM should ideally be generated UCL is incorrect or doesn't capture the intent, this feedback can be used to refine the compiler's system prompt validated by a formal UCL parser before being utilized.
-
-### 8.5. Tokenization Considerations
-
-*   **Standard or to create data for future fine-tuning.
+*   If using an LLM as a "Prompt Compiler," implementing a feedback mechanism is beneficial. If the generated UCL is incorrect or doesn't capture the intent, this feedback can be used to refine the compiler's system prompt or to create data for future fine-tuning.
 
 ## Appendices
 
 ### Appendix A: Glossary of Terms
 
 *   **ABNF (Augmented Backus-Naur Form):** A formal grammar notation used in this specification to define the syntax of UCL.
-*   **AI Agent:** A software entity, often powered by an LLM or other AI techniques, शांतिthat can perceive its environment, reason, and act to achieve goals.
+*   **AI Agent:** A software entity, often powered by an LLM or other AI techniques, that can perceive its environment, reason, and act to achieve goals.
 *   **API (Application Programming Interface):** A set of rules and protocols for building and interacting with software applications.
-*   **ASTPerf (Abstract Syntax Tree):** A tree representation of the abstract syntactic structure of source code (or in this case, aetto! Procediamo con la **Iterazione 12: `SPECIFICATION.MD UCL message) written in a formal language.
-*   **Canonical Form (UCL):** The strict, normalized textual` - Appendici (in inglese)**.
-
-Le appendici sono utili per raccogliere informazioni di riferimento come un glossario dei termini representation of a UCL message, serving as the reference for conformance.
-*   **Context Stack (`ContextStackPart` e la grammatica ABNF completa in un unico posto.
-
-
-**Content for `SPECIFICATION.MD):** An ordered list of UCL-IDs that provides the semantic and interpretive frame for a UCL message.
-*   **CUR` (Continuing - Appendices - English Version):**
-
-
-## Appendices
-
-### Appendix A: GlossaryIE (Compact URI Expression):** A shortened form of a URI, using a prefix mapped to a base URI (e. of Terms
-
-*   **ABNF (Augmented Backus-Naur Form):** A formal grammar notation used ing., `schema:Book`).
-*   **IRI (Internationalized Resource Identifier):** A generalization of URIs that this specification to define the syntax of UCL.
-*   **AST (Abstract Syntax Tree):** An internal tree representation allows a wider range of Unicode characters; must be mapped to URIs for many network protocols.
-*   **JSON of a parsed UCL message, reflecting its syntactic structure.
-*   **Canonical Form (UCL):** The strict (JavaScript Object Notation):** A lightweight data-interchange format. UCL's map and list syntax in the payload is, normalized textual representation of a UCL message, serving as the reference for conformance.
-*   **Context Stack (`ContextStackPart` JSON-like.
+*   **AST (Abstract Syntax Tree):** An internal tree representation of a parsed UCL message, reflecting its syntactic structure.
+*   **Canonical Form (UCL):** The strict, normalized textual representation of a UCL message, serving as the reference for conformance.
+*   **Context Stack (`ContextStackPart`):** An ordered list of UCL-IDs that provides the semantic and interpretive frame for a UCL message, read from most specific to most general.
+*   **CURIE (Compact URI Expression):** A shortened form of a URI, using a prefix mapped to a base URI (e.g., `schema:Book`).
+*   **IRI (Internationalized Resource Identifier):** A generalization of URI that allows a wider range of Unicode characters, defined in RFC 3987.
+*   **JSON (JavaScript Object Notation):** A lightweight data-interchange format. UCL's map and list syntax in the payload is JSON-like.
 *   **JSON-LD (JSON for Linked Data):** A method to embed Linked Data (RDF) semantics within JSON.
-*   **LLM (Large Language Model):** An AI model trained on vast):** An ordered list of UCL-IDs that provides the semantic and interpretive frame for a UCL message, read from most specific to most general.
-*   **CURIE (Compact URI Expression):** A shortened form of a URI, using amounts of text data, capable of understanding and generating human-like text.
-*   **Literal Value (`LiteralValue`): a prefix mapped to a base URI (e.g., `schema:Book`).
-*   **IRI (Internationalized** A concrete data value in UCL, such as a string, number, boolean, or null.
-*   **Local Resource Identifier):** A generalization of URI that allows a wider range of Unicode characters, defined in RFC 3987. Part (CURIE):** The part of a CURIE that follows the prefix and colon (e.g., `Book` in `schema:Book`).
-*   **Map Value (`MapValue`):** A UCL data structure representing an
-*   **LLM (Large Language Model):** An advanced AI model trained on vast amounts of text data, capable of understanding unordered collection of key-value pairs.
-*   **Namespace (URI):** A collection of URIs that are and generating human-like text and, पानीpertinently, structured data like UCL.
-*   **Literal Value used to identify a set of terms (classes, properties, etc.) within a vocabulary or ontology. Identified by a base URI (`LiteralValue`):** A fundamental data value in UCL, such as a string, number, boolean, null, date.
-*   **NLP (Natural Language Processing):** A field of AI concerned with the interaction between computers and human/time, duration, or binary data.
-*   **Map (`MapValue`):** An unordered collection of key language.
+*   **LLM (Large Language Model):** An advanced AI model trained on vast amounts of text data, capable of understanding and generating human-like text and, pertinently, structured data like UCL.
+*   **Literal Value (`LiteralValue`):** A fundamental data value in UCL, such as a string, number, boolean, null, date/time, duration, or binary data.
+*   **Map (`MapValue`):** An unordered collection of key-value pairs in UCL, where keys are typically UCL-IDs or strings, and values can be any UCL `Value` type.
+*   **Namespace (URI):** A base URI used in conjunction with a local part to form a globally unique UCL-ID. Often associated with a prefix.
+*   **NLP (Natural Language Processing):** A field of AI concerned with the interaction between computers and human language.
 *   **NLU (Natural Language Understanding):** A subfield of NLP focused on machine reading comprehension.
-*-value pairs in UCL, where keys are typically UCL-IDs or strings, and values can be any UCL `Value` type.
-*   **Namespace (URI):** A base URI used in conjunction with a local part to form a   **Ontology:** A formal, explicit specification of a shared conceptualization; defines concepts, properties, and relationships within a domain.
-*   **Operation (`OperationPart`):** The component of a UCL message that specifies the primary action or intent.
- globally unique UCL-ID. Often associated with a prefix.
-*   **Ontology:** A formal, explicit specification of a shared conceptualization. In the context of UCL, ontologies (like Schema.org, or custom ones) provide the definitions*   **Parser:** A software component that analyzes a string of symbols (a UCL message) according to the rules of a formal grammar.
-*   **Payload (`PayloadPart`):** The component of a UCL message that carries the data or parameters for for UCL-IDs.
-*   **Operation (`OperationPart`):** The component of a UCL message that specifies the primary action an operation.
-*   **Permissive Mode (Parsing):** A parsing mode that tolerates minor deviations from the UCL or intent, consisting of an `OperationVerb` and a specific `UCLID_OperationSpecific`.
-*   **Payload (`PayloadPart`):** The component of a UCL message containing the data or parameters associated with an operation, or the result of Canonical Form and attempts to normalize them.
-*   **Prefix (UCL-ID):** An alias (e.g., an operation.
-*   **Permissive Mode (Parsing):** A UCL parsing mode that tolerates minor deviations from the Canonical `schema`) declared with `@prefix` that maps to a base URI.
-*   **Prompt Compiler (UCL): Form and attempts to normalize them.
-*   **Prefix (`@prefix` declaration):** An alias (e.g., `** A conceptual tool (often LLM-based) that translates natural language requests into well-formed UCL messages.
-*   schema:`) declared in a UCL message to represent a base URI (e.g., `<http://schema.org/>`).**RDF (Resource Description Framework):** A W3C standard framework for representing information in the Web, based on subject
-*   **Prompt Compiler (UCL):** A conceptual tool or LLM configuration designed to translate natural language requests into well-predicate-object triples.
-*   **Registry (Prefix/UCL-ID):** A system that-formed UCL messages.
-*   **RDF (Resource Description Framework):** A World Wide Web Consortium (W3C stores and provides mappings for prefixes to base URIs or definitions for UCL-IDs.
-*   **Semantic Web:** An extension of the World Wide Web through standards set by the W3C, aiming to make Internet data machine-readable.
-) standard lojasfor representing information in the Web, often used as a foundation for semantic web technologies and a key inspiration for UCL'*   **Serialization:** The process of converting a data structure or object state into a format that can be stored or transmitted ands use of URIs.
-*   **Registry (Prefix/UCL-ID):** A system (central reconstructed later. (e.g., UCL-Bin).
-*   **Strict Mode (Parsing):** A parsing mode that requiresized or distributed) that stores mappings from prefixes to base URIs, or definitions for UCL-IDs.
-*   **Semantic strict adherence to the UCL Canonical Form.
-*   **System Prompt (LLM):** Initial instructions given to an LLM to define its role, capabilities, and constraints for an interaction.
-*   **UCL-ID (Universal Web:** A W3C vision for a Web of linked data, where information is given well-defined meaning, better Contextual Language Identifier):** The primary means of identifying resources (concepts, entities, actions, contexts, etc.) in UCL, canonically a URI.
-*   **URI (Uniform Resource Identifier):** A string of characters that unambiguously identifies a particular enabling computers and people to work in cooperation. UCL aligns with these principles.
-*   **Serialization (Binary - UCL-Bin): resource.
-*   **Vocabulary (Semantic):** A defined set of terms (UCL-IDs/URIs) and** A compact, machine-optimized binary format for UCL messages, designed for efficient transmission and parsing.
+*   **Ontology:** A formal, explicit specification of a shared conceptualization. In the context of UCL, ontologies (like Schema.org, or custom ones) provide the definitions for UCL-IDs.
+*   **Operation (`OperationPart`):** The component of a UCL message that specifies the primary action or intent, consisting of an `OperationVerb` and a specific `UCLID_OperationSpecific`.
+*   **Parser:** A software component that analyzes a string of symbols (a UCL message) according to the rules of a formal grammar.
+*   **Payload (`PayloadPart`):** The component of a UCL message containing the data or parameters associated with an operation, or the result of an operation.
+*   **Permissive Mode (Parsing):** A UCL parsing mode that tolerates minor deviations from the Canonical Form and attempts to normalize them.
+*   **Prefix (`@prefix` declaration):** An alias (e.g., `schema:`) declared in a UCL message to represent a base URI (e.g., `<http://schema.org/>`).
+*   **Prompt Compiler (UCL):** A conceptual tool or LLM configuration designed to translate natural language requests into well-formed UCL messages.
+*   **RDF (Resource Description Framework):** A World Wide Web Consortium (W3C) standard for representing information in the Web, often used as a foundation for semantic web technologies and a key inspiration for UCL's use of URIs.
+*   **Registry (Prefix/UCL-ID):** A system (centralized or distributed) that stores mappings from prefixes to base URIs, or definitions for UCL-IDs.
+*   **Semantic Web:** A W3C vision for a Web of linked data, where information is given well-defined meaning, better enabling computers and people to work in cooperation. UCL aligns with these principles.
+*   **Serialization (Binary - UCL-Bin):** A compact, machine-optimized binary format for UCL messages, designed for efficient transmission and parsing.
 *   **Strict Mode (Parsing):** A UCL parsing mode that requires strict adherence to the Canonical Form, rejecting any deviations.
-*   **UCL their meanings used within a specific domain or context.
+*   **System Prompt (LLM):** Initial instructions given to an LLM to define its role, capabilities, and constraints for an interaction.
+*   **UCL-ID (Universal Contextual Language Identifier):** A globally unique identifier, canonically a URI (or IRI), used in UCL to refer to any resource (entity, type, property, action, context, etc.).
+*   **URI (Uniform Resource Identifier):** A compact sequence of characters that identifies an abstract or physical resource, as defined in RFC 3986.
+*   **Value (UCL):** The general term for any data element in UCL, which can be a `UCLID`, `LiteralValue`, `ListValue`, or `MapValue`.
+*   **Vocabulary:** A defined set of UCL-IDs (terms) and their meanings, typically associated with a specific namespace or ontology.
 
 ### Appendix B: Complete ABNF Grammar for UCL 4.2 (Textual Canonical Form)
 
-This section provides a consolidated ABNF representation of the UCL 4.2-ID (Universal Contextual Language Identifier):** A globally unique identifier, canonically a URI (or IRI), used in UCL to refer to any resource (entity, type, property, action, context, etc.).
-*   **URI textual canonical form.
+This ABNF provides a consolidated view of the UCL 4.2 grammar. `CANONICAL_SPACE` implies `%x20`.
 
 ```abnf
-UCLMessage      = [PrefixDeclarations] [SourcePart CANONICAL_SPACE] [Direction CANONICAL_SPACE] TargetPart CANONICAL_SPACE OperationPart [CANONICAL_SPACE (Uniform Resource Identifier):** A compact sequence of characters that identifies an abstract or physical resource, as defined in RFC  ModifiersPart] [CANONICAL_SPACE PayloadSeparator CANONICAL_SPACE PayloadPart] CANONICAL_SPACE3986.
-*   **Value (UCL):** The general term for any data element in UCL ContextSeparator CANONICAL_SPACE ContextStackPart
+UCLMessage      = [PrefixDeclarations] [SourcePart CANONICAL_SPACE] [Direction CANONICAL_SPACE] TargetPart CANONICAL_SPACE OperationPart [CANONICAL_SPACE ModifiersPart] [CANONICAL_SPACE PayloadSeparator CANONICAL_SPACE PayloadPart] CANONICAL_SPACE ContextSeparator CANONICAL_SPACE ContextStackPart
 
 PrefixDeclarations = *(PrefixDeclaration NEWLINE)
-PrefixDeclaration  = "@, which can be a `UCLID`, `LiteralValue`, `ListValue`, or `MapValue`.
-*   **prefix" CANONICAL_SPACE DeclaredPrefix ":" CANONICAL_SPACE "<" URI_Base ">"
-DeclaredPrefix     = 1*(ALPHA / DIGIT / "_" / "-") ; Cannot start or end with "_" orVocabulary:** A defined set of UCL-IDs (terms) and their meanings, typically associated with a specific namespace or ontology "-"
+PrefixDeclaration  = "@prefix" CANONICAL_SPACE DeclaredPrefix ":" CANONICAL_SPACE "<" URI_Base ">"
+DeclaredPrefix     = 1*(ALPHA / DIGIT / "_" / "-") ; Cannot start or end with "_" or "-"
 URI_Base           = 1*<any char except ">"> ; Represents a valid absolute URI string
-NEW.
-
-### Appendix B: Complete ABNF Grammar for UCL 4.2 (Textual Canonical Form)
-
-ThisLINE            = %x0A ; LF
-CANONICAL_SPACE    = %x20 ; Single space character ABNF provides a consolidated view of the UCL 4.2 grammar. `CANONICAL_SPACE` implies
+NEWLINE            = %x0A ; LF
 
 SourcePart      = UCLID
 Direction       = ">" / "<" / "<>"
-TargetPart      = `%x20`.
-
-```abnf
-UCLMessage      = [PrefixDeclarations] [SourcePart CAN UCLID
+TargetPart      = UCLID
 OperationPart   = OperationVerb CANONICAL_SPACE UCLID_OperationSpecific
-OperationVerb   = "ONICAL_SPACE] [Direction CANONICAL_SPACE] TargetPart CANONICAL_SPACE OperationPart [CANread" / "execute" / "query" / "create" / "delete" / "subscribe" / "ONICAL_SPACE ModifiersPart] [CANONICAL_SPACE PayloadSeparator CANONICAL_SPACE PayloadPart] CANnotify" / CustomVerb_UCLID
+OperationVerb   = "read" / "execute" / "query" / "create" / "delete" / "subscribe" / "notify" / CustomVerb_UCLID
 CustomVerb_UCLID= UCLID
-UCLID_OperationONICAL_SPACE ContextSeparator CANONICAL_SPACE ContextStackPart
-
-PrefixDeclarations = *(PrefixDeclaration NEWLINE)
-PrefixSpecific = UCLID
+UCLID_OperationSpecific = UCLID
 
 ModifiersPart   = MODIFIER_PREFIX UCLID *(CANONICAL_SPACE MODIFIER_PREFIX UCLID)
 MODIFIER_PREFIX = "^"
@@ -1031,111 +889,52 @@ MODIFIER_PREFIX = "^"
 PayloadSeparator= ":"
 PayloadPart     = Value
 
-ContextDeclaration  = "@prefix" CANONICAL_SPACE DeclaredPrefix ":" CANONICAL_SPACE "<" URI_Separator= "#"
-ContextStackPart= UCLID *(CONTEXT_STACK_SEPARATOR UCLID)
-CONTEXT_STACK_SEPARATORBase ">"
-DeclaredPrefix     = 1*(ALPHA / DIGIT / "_" / "-") ; Cannot start or end with "_" or "-"
-URI_Base           = 1*<any char except ">"> ; Represents a valid absolute URI string
-NEW = "/"
-
-; UCL-ID (Simplified for ABNF, actual validation involves URI/CURIE rules)
-LINE            = %x0A ; LF
-
-SourcePart      = UCLID
-Direction       = ">" / "<UCLID           = PrefixedName / FullURI
-PrefixedName    = Prefix ":" LocalPart
-Prefix          " / "<>"
-TargetPart      = UCLID
-
-OperationPart   = OperationVerb CANONICAL_SPACE UCLID_OperationSpecific
-OperationVerb   = "read" / "execute" / "query" / "create" / "= 1*(ALPHA / DIGIT / "_" / "-")
-LocalPart       = 1*(%x21delete" / "subscribe" / "notify" / CustomVerb_UCLID
-CustomVerb_UCLID= UCLID / %x23-%x2F / %x3A-%x40 / %x41-%
-UCLID_OperationSpecific = UCLID
-
-ModifiersPart   = 1*(MODIFIER_PREFIX UCLID) *(CANONICAL_SPACE MODIFIER_PREFIX UCLID)
-MODIFIER_PREFIX = "^"
-
-PayloadSeparator= ":"
-x5A / %x5C / %x5E-%x7E) ; Printable chars excluding space,PayloadPart     = Value
-
 ContextSeparator= "#"
-ContextStackPart= UCLID *(CONTEXT_STACK_SEPARATOR UCL <, >
-FullURI         = "<" 1*<any char except ">"> ">" ; Enclosed in angleID)
+ContextStackPart= UCLID *(CONTEXT_STACK_SEPARATOR UCLID)
 CONTEXT_STACK_SEPARATOR = "/"
 
-; UCL-ID (Simplified for ABNF, actual validation brackets if it's a full URI not using a prefix
-
-; Value and LiteralValue
-Value           = UCLID / LiteralValue is more complex: URI or CURIE)
-UCLID           = 1*(ALPHA / DIGIT / ":" / ListValue / MapValue
-LiteralValue    = NullLiteral / BooleanLiteral / StringLiteral / NumberLiteral / DateTimeLiteral / DurationLiteral / BinaryLiteral
-
-NullLiteral     = "ucl:val:null" ; This is a specific / "." / "_" / "-" / "@" / PathCharOrPercentEncoded) ; Must conform to URI/CURIE rules. UCLID
-BooleanLiteral  = "true" / "false"
-StringLiteral   = %x22 * Prefixes must be declared or predefined.
-PathCharOrPercentEncoded = <Characters allowed in URI paths/fragments/queries or percent-encoded sequences>
+; UCL-ID (Simplified for ABNF, actual validation is more complex: URI or CURIE)
+UCLID           = PrefixedName / FullURIWithBrackets ; Or a Full URI without brackets if it doesn't contain spaces or conflicting chars.
+PrefixedName    = Prefix ":" LocalPart
+Prefix          = 1*(ALPHA / DIGIT / "_" / "-") ; Cannot start or end with "_" or "-"
+LocalPart       = 1*(%x21 / %x23-%x2F / %x3A-%x40 / %x41-%x5A / %x5C / %x5E-%x7E / %x25 2HEXDIG) ; Printable chars excluding <, >, ", space, plus percent-encoded. Needs refinement for full URI path/query/fragment rules.
+FullURIWithBrackets = "<" 1*<any char except ">"> ">" ; Full URI enclosed in angle brackets.
 
 ; Value Types
-Value           = ListValue / MapValue / SingleValue ;StringChar %x22 ; Double-quoted string
-StringChar      = <any Unicode char except %x22 (") or %x5C (\) or control chars> / EscapeSequence
-EscapeSequence  = %x5C (% Order matters for parser, try compound first
+Value           = ListValue / MapValue / SingleValue ; Order matters for parser, try compound first
 SingleValue     = UCLID / LiteralValue
 
-LiteralValue    = Nullx22 / %x5C / %x62 / %x66 / %x6E /Literal / BooleanLiteral / NumberLiteral / DateTimeLiteral / DurationLiteral / BinaryLiteral / StringLiteral ; StringLiteral last due to its generic nature
+LiteralValue    = NullLiteral / BooleanLiteral / NumberLiteral / DateTimeLiteral / DurationLiteral / BinaryLiteral / StringLiteral ; StringLiteral last due to its generic nature
 
 NullLiteral     = "ucl:val:null" ; Predefined UCL-ID
-Boolean %x72 / %x74 / %x75 4HEXDIG) ; \", \\, \b, \f, \n, \r, \t, \uXXXX
-
-NumberLiteral   = [NEG]Literal  = "true" / "false"
+BooleanLiteral  = "true" / "false"
 NumberLiteral   = [SIGN] 1*DIGIT ["." 1*DIGIT] [("e" / "E") [SIGN] 1*DIGIT]
- INT [FRAC] [EXP]
-NEG             = "-"
-INT             = "0" / (DIGIT1SIGN            = "+" / "-"
-StringLiteral   = DQUOTE *CHAR_IN_STRING DQUOTE
-CHAR_IN_STRING-9 *DIGIT)
-FRAC            = "." 1*DIGIT
-EXP             = ("e" / "E") [SIGN] 1*DIGIT
 SIGN            = "+" / "-"
-DIGIT1-9        =  = UNESCAPED_CHAR / ESCAPED_CHAR
-UNESCAPED_CHAR  = % %x31-39
-DIGIT           = %x30-39
-HEXDIG          = DIGx20-21 / %x23-5B / %x5D-10FFFF ; AnyIT / "A" / "B" / "C" / "D" / "E" / "F" / char except DQUOTE, BACKSLASH
-ESCAPED_CHAR    = BACKSLASH (DQUOTE / BACKSLASH / " "a" / "b" / "c" / "d" / "e" / "f"
-
-b" / "f" / "n" / "r" / "t" / ("u" 4HEXDateTimeLiteral = StringLiteral ; Content must conform to ISO 8601 with timezone
-DurationLiteral = StringLiteral ; Content must conform to ISO 8601 duration
-BinaryLiteral   = "ucl:datatype:binaryDIG))
+StringLiteral   = DQUOTE *CHAR_IN_STRING DQUOTE
+CHAR_IN_STRING  = UNESCAPED_CHAR / ESCAPED_CHAR
+UNESCAPED_CHAR  = %x20-21 / %x23-5B / %x5D-10FFFF ; Any char except DQUOTE, BACKSLASH
+ESCAPED_CHAR    = BACKSLASH (DQUOTE / BACKSLASH / "b" / "f" / "n" / "r" / "t" / ("u" 4HEXDIG))
 DQUOTE          = %x22
 BACKSLASH       = %x5C
 
-DateTimeLiteral = String(" StringLiteral ")" ; StringLiteral here is Base64 content
+DateTimeLiteral = StringLiteral ; Content must conform to ISO 8601 date-time with timezone
+DurationLiteral = StringLiteral ; Content must conform to ISO 8601 duration
+BinaryLiteral   = "ucl:datatype:binary(" StringLiteral ")" ; StringLiteral here is Base64
 
-; ListValue and MapValue
-ListValue       Literal ; Must conform to ISO 8601 date-time with timezone
-DurationLiteral = StringLiteral ; Must conform to ISO 8601 duration
-BinaryLiteral   = "ucl:datatype:binary(" StringLiteral ")" ; String= "[" [Value *(LIST_SEPARATOR Value)] "]"
-LIST_SEPARATOR  = CANONICAL_SPACE "," CANONICAL_SPACE ; Comma surrounded by single spaces in canonical form
+ListValue       = "[" [Value *(LIST_SEPARATOR Value)] "]"
+MapValue        = "{" [MapPair *(MAP_SEPARATOR MapPair)] "}"
+MapPair         = MAP_KEY PAIR_SEPARATOR Value
+MAP_KEY         = UCLID / StringLiteral
 
-MapValue        = "{" [MapPair *(Literal here is Base64
-
-ListValue       = "[" [Value *(CANONICAL_SPACE_OPT LIST_SEPARATOR CANMAP_SEPARATOR MapPair)] "}"
-MapPair         = (UCLID / StringLiteral) PAIR_SEPARATOR ValueONICAL_SPACE_OPT Value)] CANONICAL_SPACE_OPT "]"
-MAP_KEY         = UCL
-PAIR_SEPARATOR  = CANONICAL_SPACE ":" CANONICAL_SPACE ; Colon surrounded by single spaces
-ID / StringLiteral
-MapPair         = MAP_KEY CANONICAL_SPACE_OPT PAIR_SEPARATOR CANMAP_SEPARATOR   = CANONICAL_SPACE "," CANONICAL_SPACE ; Comma surrounded by single spaces
-ONICAL_SPACE_OPT Value
-MapValue        = "{" [MapPair *(CANONICAL_SPACE_OPT MAP_SEPARATOR CANONICAL_SPACE_OPT MapPair)] CANONICAL_SPACE_OPT "}"
-
-LIST_SEPARATOR  ```
-*Nota sulla Grammatica ABNF Semplificata:* La definizione di `UCLID`, `Full= ","
-MAP_SEPARATOR   = ","
+; Separators in Canonical Form for Lists/Maps
+; For canonical form, a single space is used AFTER commas, and NO spaces around colons in map pairs.
+; Example: [ "a", "b" ] and { "key":"value", "anotherKey":"anotherValue" }
+LIST_SEPARATOR  = "," CANONICAL_SPACE
+MAP_SEPARATOR   = "," CANONICAL_SPACE
 PAIR_SEPARATOR  = ":"
-CANONICAL_SPACE_OPTURI`, `LocalPart`, `StringChar`, e `URI_Base` è semplificata qui per leggibilità. Una = *(CANONICAL_SPACE) ; Zero or more spaces for permissive parsing, 
-                                     ; but canonical form specifica ABNF completamente rigorosa per URI e caratteri Unicode sarebbe molto più complessa e farebbe riferimento a RFC esistenti. La regola per `LIST_SEPARATOR`, `MAP_SEPARATOR`, e `PAIR_SEPARATOR` include `CANONICAL_ has zero OR one as per main rule.
-                                     ; Inside lists/maps, canonical might prefer no spaces around separators.SPACE` per la forma canonica; un parser permissivo potrebbe tollerare più o zero spazi attorno a questi delimit
-                                     ; This part needs careful canonicalization rule.
-                                     ; For now, assume canonical form is: [atori interni.
 
----
+; General definitions
+ALPHA           = %x41-5A / %x61-7A   ; A-Z / a-z
+DIGIT           = %x30-39            ; 0-9
+HEXDIG          = DIGIT / "A" / "B" / "C" / "D" / "E" / "F" / "a" / "b" / "c" / "d" / "e" / "f"
+
