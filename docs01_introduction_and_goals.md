@@ -56,8 +56,3 @@ The long-term vision for UCL is to become a widely adopted "lingua franca" for s
 
 It is intended to be a community-driven effort, evolving based on practical use cases and feedback.
 
----
-
-Next, you might want to read:
-*   [Getting Started with UCL](./02_getting_started.md)
-*   [Core Concepts of UCL](./03_core_concepts.md)
