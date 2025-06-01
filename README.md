@@ -36,7 +36,7 @@ UCL messages are built around a few core ideas:
 
 ## 📚 Get Started & Learn More
 
-*   **Dive into the Full Specification:** [`SPECIFICATION.md`](./SPECIFICATION.md) - For a deep understanding of all rules and components.
+*   **Dive into the Full Specification:** [`SPECIFICATION.MD`](./SPECIFICATION.md) - For a deep understanding of all rules and components.
 *   **Quick Overview:** [`PRESENTATION_QUICK_GUIDE.md`](./PRESENTATION_QUICK_GUIDE.md) - Understand UCL in a few minutes.
 *   **Documentation & Guides:**
     *   [`docs/01_introduction_and_goals.md`](./docs/01_introduction_and_goals.md) - Why UCL was created.
