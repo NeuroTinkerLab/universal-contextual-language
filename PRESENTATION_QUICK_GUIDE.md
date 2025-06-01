@@ -78,7 +78,7 @@ UCL is particularly useful for interacting with Large Language Models (LLMs):
 ## Want to Learn More?
 
 *   Read the **Full Overview** in the [`README.md`](./README.md) file.
-*   Dive into the **Detailed Technical Specification** in [`SPECIFICATION.md`](./SPECIFICATION.md).
+*   Dive into the **Detailed Technical Specification** in [`SPECIFICATION.MD`](./SPECIFICATION.MD).
 *   Explore **Practical Examples** in the [`examples/`](./examples/) folder.
 
 ---
