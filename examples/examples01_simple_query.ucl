@@ -1,0 +1,14 @@
+// UCL Example: Simple Query for Information
+// This example shows a basic request to a knowledge base service 
+// to find information about a specific book using its title and author.
+
+@prefix schema: <http://schema.org/>
+@prefix wd: <http://www.wikidata.org/entity/>
+@prefix ucl: <http://ucl-spec.org/4.1/core#>
+
+ucl:id:UserQueryAgent001 > ucl:service:KnowledgeBaseService query schema:Book : 
+  { 
+    schema:name: "Nineteen Eighty-Four", 
+    schema:author: wd:Q3395 // Wikidata ID for George Orwell
+  } 
+# ucl:context:LiteraryWork / ucl:context:InformationRequest

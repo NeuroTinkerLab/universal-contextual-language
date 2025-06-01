@@ -1,0 +1,60 @@
+// UCL Example: Message with a Complex, Nested Data Payload
+// This shows how UCL's list and map structures can represent hierarchical data,
+// for example, submitting a customer order.
+
+@prefix schema: <http://schema.org/>
+@prefix sales: <http://example.org/sales-ontology#>
+@prefix ucl: <http://ucl-spec.org/4.1/core#>
+
+ucl:id:ECommercePlatform > sales:service:OrderProcessingSystem ! execute sales:action:placeOrder : 
+  {
+    sales:orderID: "ORD-2024-A458B",
+    schema:customer: {
+      ucl:type: schema:Person,
+      schema:identifier: "CUST-007",
+      schema:givenName: "Alice",
+      schema:familyName: "Wonder",
+      schema:email: "alice.w@example.com",
+      schema:address: {
+        ucl:type: schema:PostalAddress,
+        schema:streetAddress: "123 Main St",
+        schema:addressLocality: "Anytown",
+        schema:addressRegion: "CA",
+        schema:postalCode: "90210",
+        schema:addressCountry: "US"
+      }
+    },
+    sales:orderItems: [
+      {
+        ucl:type: schema:OrderItem,
+        schema:orderItemNumber: "1",
+        schema:orderedItem: {
+          ucl:type: schema:Product,
+          schema:productID: "PROD-A1B2",
+          schema:name: "Wireless ergonomic mouse",
+          schema:price: 25.99,
+          schema:priceCurrency: "USD"
+        },
+        schema:orderQuantity: 1
+      },
+      {
+        ucl:type: schema:OrderItem,
+        schema:orderItemNumber: "2",
+        schema:orderedItem: {
+          ucl:type: schema:Product,
+          schema:productID: "PROD-C3D4",
+          schema:name: "Mechanical keyboard",
+          schema:price: 79.50,
+          schema:priceCurrency: "USD"
+        },
+        schema:orderQuantity: 1
+      }
+    ],
+    sales:paymentDetails: {
+      ucl:type: sales:PaymentInformation,
+      sales:paymentMethod: sales:method:CreditCard,
+      sales:transactionID: "TXN_abcdef123456"
+    },
+    schema:orderDate: "2024-03-15T17:05:00Z"
+  }
+# ucl:context:ECommerce / sales:context:OrderFulfillment / schema:context:SalesTransaction

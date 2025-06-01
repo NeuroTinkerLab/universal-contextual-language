@@ -1,0 +1,25 @@
+// UCL Example: Image Generation Request
+// This example demonstrates a command to an AI image generation service,
+// specifying the subject, style, and desired atmosphere.
+
+@prefix ucl: <http://ucl-spec.org/4.1/core#>
+@prefix schema: <http://schema.org/>
+@prefix art: <http://example.org/art-ontology#> // Custom art ontology
+
+ucl:id:ArtDirectorAI > art:service:AIImageGenerator execute art:verb:generateVisualComposition : 
+  {
+    art:param:outputType: art:type:DigitalPainting,
+    art:param:sceneDescription: {
+      art:param:subject: "A lone astronaut discovering a glowing alien artifact on a desolate moon.",
+      art:param:mood: art:value:MysteriousAndAweInspiring,
+      art:param:lighting: art:value:EtherealGlowFromArtifact,
+      art:param:keyElements: [
+        art:element:Astronaut(pose="contemplative"),
+        art:element:AlienArtifact(design="crystalline_and_pulsating"),
+        art:element:DesolateMoonscape(features=["craters", "distant_earth_in_sky"])
+      ]
+    },
+    art:param:artisticStyle: art:style:ImpressionisticSciFi,
+    art:param:aspectRatio: "16:9"
+  }
+# art:context:CreativeWork / art:context:ScienceFictionArt / art:context:ImageGeneration
