@@ -1,6 +1,6 @@
 # Getting Started with UCL
 
-This guide provides a quick start to understanding the basic structure of a UCL (Universal Contextual Language) message and how to begin thinking in terms of its core components. For a full technical breakdown, please refer to the [UCL Specification](../SPECIFICATION.MD).
+This guide provides a quick start to understanding the basic structure of a UCL (Universal Contextual Language) message and how to begin thinking in terms of its core components. 
 
 ## Anatomy of a Simple UCL Message
 
